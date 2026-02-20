@@ -1,9 +1,10 @@
 import random
 import logging
-import threading  # Added for 24/7 hosting
-from flask import Flask  # Added for 24/7 hosting
+import threading
+from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+import os
 
 # --- 24/7 HOSTING SETUP ---
 app = Flask('')
@@ -11,13 +12,10 @@ app = Flask('')
 @app.route('/')
 def home():
     return "Bot is alive!"
-import os # Make sure to add this import at the very top of your file
 
 def run_flask():
-    # Render provides a PORT environment variable; defaults to 10000 if not found
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
-
 
 def keep_alive():
     t = threading.Thread(target=run_flask)
@@ -30,17 +28,17 @@ logger = logging.getLogger(__name__)
 
 BOT_TOKEN = "8230028111:AAE7KjHeAs_77QFrSOdgQa5LcTa4pWN4gEU"
 
-# Photos
+# Photos (updated/added the ones you specified)
 MAIN_PHOTO      = "AgACAgIAAxkBAAEDJ0tpkkmqIdsliLFxwSgmhXty3PARVwACfg9rG2yOmEhK28zLz3KpYwEAAwIAA3kAAzoE"
-COLLAB_PHOTO    = "AgACAgIAAxkBAAEDJ1FpklT6dN2hi4QUtY7bxkcV9SEiUQACkxhrG9vzkUj2YDtu3pCiLAEAAwIAA3kAAzoE"
-CTO_PHOTO       = "AgACAgIAAxkBAAEDJ1dpklkAASp9eEjlbVJQFVPfZL1JFGAAArMQaxuxkphIAVmlSkXqprwBAAMCAAN5AAM6BA"
-EXCLUSIVE_PHOTO = "AgACAgIAAxkBAAEDJ1tpklqRRfq0PiGH3JbwW2bBNhSQWQACnw9rG2yOmEi3mjBsxruF8QEAAwIAA3kAAzoE"
+COLLAB_PHOTO    = "AgACAgIAAxkBAAEbSwxpmIJD_dQ3je-eHbCFoFJ7rEkFbAACMhZrG9XRyUiYbuMu64654AEAAwIAA3kAAzoE"  # ← updated as requested
+CTO_PHOTO       = "AgACAgIAAxkBAAEbSwxpmIJD_dQ3je-eHbCFoFJ7rEkFbAACMhZrG9XRyUiYbuMu64654AEAAwIAA3kAAzoE"  # ← updated as requested
+EXCLUSIVE_PHOTO = "AgACAgIAAxkBAAEbSyxpmIXnUol6eAlKr7rqZjqy5fEVdAACShZrG9XRyUgorHZ-HtdvBAEAAwIAA3kAAzoE"  # ← updated as requested
 VOTING_PHOTO    = "AgACAgIAAxkBAAEDJ2NpkmG3S76BOLcDS6t7FE_VeMx5MQACnhhrG9vzkUjW7miUVjLbHAEAAwIAA3kAAzoE"
 
-# Chain buttons
+# Chain buttons (used for collab, cto, trending)
 CHAIN_BUTTONS = [
-    [InlineKeyboardButton("🟣 Sol", callback_data="chain_sol"),
-     InlineKeyboardButton("Ξ ETH", callback_data="chain_eth")],
+    [InlineKeyboardButton("🟣 Solana", callback_data="chain_sol"),
+     InlineKeyboardButton("Ξ Ethereum", callback_data="chain_eth")],
     [InlineKeyboardButton("🟦 Base", callback_data="chain_base"),
      InlineKeyboardButton("🟡 BSC", callback_data="chain_bsc")],
     [InlineKeyboardButton("← Back", callback_data="back_to_short_menu")],
@@ -120,9 +118,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     elif data == "collab_trending":
         caption = (
             "👥 <b>COLLAB TRENDING – Powered by Community</b>\n\n"
-            "🎁 NO Upfront Payment\n\n🔥 You have 60 minutes to raise the goal\n"
+            "🎁 NO Upfront Payment\n\n"
+            "🔥 You have 60 minutes to raise the goal\n"
             "If met → Auto listed | If not → Auto refund\n\n"
-            "➗ Mystery Button – Unlock Hidden Deals\n\n▶️ Select chain to begin:"
+            "➗ Mystery Button – Unlock Hidden Deals\n\n"
+            "▶️ Select chain to begin:"
         )
         reply_markup = InlineKeyboardMarkup(CHAIN_BUTTONS)
         photo = COLLAB_PHOTO
@@ -130,8 +130,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     elif data == "cto_trending":
         caption = (
             "👥 <b>CTO TRENDING – No Dev? No Problem</b>\n\n"
-            "🔥 Community takeover trending\n⏱ 60 minutes funding\n💸 Auto refund if failed\n\n"
-            "➗ Mystery Discount Available\n\n▶️ Select chain:"
+            "🔥 Community takeover trending\n"
+            "⏱ 60 minutes funding\n"
+            "💸 Auto refund if failed\n\n"
+            "➗ Mystery Discount Available\n\n"
+            "▶️ Select chain:"
         )
         reply_markup = InlineKeyboardMarkup(CHAIN_BUTTONS)
         photo = CTO_PHOTO
@@ -142,16 +145,29 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             "🔥 Reach thousands of real users with our top tier ad options across the Major ecosystem.\n\n"
             "⚡️ Choose one of the options below to learn more and boost your project visibility."
         )
-        ad_buttons = [
+        
+        # Buttons with emojis + randomized order
+        ad_options = [
             InlineKeyboardButton("🚀 Major Ultimate Boost", callback_data="major_ultimate"),
-            InlineKeyboardButton("🗳️ Join Vote", callback_data="join_vote"),
+            InlineKeyboardButton("🗳️ Join2Vote", callback_data="join_vote"),
             InlineKeyboardButton("📩 Mass DM", callback_data="mass_dm"),
             InlineKeyboardButton("🔘 Button Ads", callback_data="button_ads"),
             InlineKeyboardButton("🎤 Major AMA", callback_data="major_ama"),
-            InlineKeyboardButton("← Back", callback_data="back_to_short_menu"),
         ]
-        random.shuffle(ad_buttons)
-        keyboard = [ad_buttons[i:i+3] for i in range(0, len(ad_buttons), 3)]
+        random.shuffle(ad_options)
+        
+        # Make it more square/random-looking (2–3 per row mix)
+        keyboard = []
+        i = 0
+        while i < len(ad_options):
+            if random.random() > 0.4 and i + 1 < len(ad_options):
+                keyboard.append([ad_options[i], ad_options[i+1]])
+                i += 2
+            else:
+                keyboard.append([ad_options[i]])
+                i += 1
+        
+        keyboard.append([InlineKeyboardButton("← Back", callback_data="back_to_short_menu")])
         reply_markup = InlineKeyboardMarkup(keyboard)
         photo = EXCLUSIVE_PHOTO
 
@@ -204,13 +220,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         )
 
 def main():
-    # Start the Flask server in a separate thread
     keep_alive()
-
     app_bot = ApplicationBuilder().token(BOT_TOKEN).build()
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(CallbackQueryHandler(button_handler))
-
     print("Major Boost Bot running... Test /start")
     app_bot.run_polling(allowed_updates=Update.ALL_TYPES)
 
